@@ -109,8 +109,12 @@ export class Snooker extends Scene {
 
         this.materials = {
             table: new Material(new Textured_Phong(), {
-                ambient: 2, diffusivity: 1, specularity: 1,
+                ambient: 2, diffusivity: 0.5, specularity: 1,
                 texture: new Texture("assets/atable.png")
+            }),
+            cue_ball: new Material(new defs.Phong_Shader(), {
+                color: hex_color("#FFFFFF"),
+                ambient: 1, diffusivity: 1, specularity: 1
             }),
             red_ball: new Material(new Gouraud_Shader(), {
                 color: hex_color("#FF0000"),
@@ -121,8 +125,24 @@ export class Snooker extends Scene {
                 color: hex_color("#FFFF00"),
                 ambient: 1, diffusivity: 1, specularity: 1
             }),
-            cue_ball: new Material(new defs.Phong_Shader(), {
-                color: hex_color("#FFFFFF"),
+            green_ball: new Material(new defs.Phong_Shader(), {
+                color: hex_color("#013220"),
+                ambient: 1, diffusivity: 1, specularity: 1
+            }),
+            brown_ball: new Material(new defs.Phong_Shader(), {
+                color: hex_color("#964B00"),
+                ambient: 1.2, diffusivity: 1, specularity: 1
+            }),
+            blue_ball: new Material(new defs.Phong_Shader(), {
+                color: hex_color("#00008B"),
+                ambient: 1, diffusivity: 1, specularity: 1
+            }),
+            pink_ball: new Material(new defs.Phong_Shader(), {
+                color: hex_color("#FF69B4"),
+                ambient: 1, diffusivity: 1, specularity: 1
+            }),
+            black_ball: new Material(new defs.Phong_Shader(), {
+                color: hex_color("#000000"),
                 ambient: 1, diffusivity: 1, specularity: 1
             }),
             stick: new Material(new defs.Textured_Phong(), {
@@ -149,6 +169,8 @@ export class Snooker extends Scene {
         this.player2_color = hex_color("#0000ff");
 
         this.initial_camera_location = Mat4.look_at(vec3(0, 0, 10), vec3(0, 0, 0), vec3(0, 1, 0));
+        this.starting = false;
+        this.resetting = false;
     }
     createBalls() {
         // Create the balls and add them to the balls array
@@ -300,21 +322,33 @@ export class Snooker extends Scene {
         this.ball_v0_x = this.ball_v0_x - (this.ball_v0_x * friction);
         this.ball_v0_z = this.ball_v0_z - (this.ball_v0_z * friction);
 
-        if(this.ball_v0_z < 0.005) {
+        if (this.ball_v0_z < 0.005) {
             this.ball_v0_z = 0;
         }
 
-        if(this.ball_v0_x > 0) {
-            if(this.ball_v0_x < 0.005) {
+        if (this.ball_v0_x > 0) {
+            if (this.ball_v0_x < 0.005) {
                 this.ball_v0_x = 0;
             }
         }
 
-        if(this.ball_v0_x < 0) {
-            if(-this.ball_v0_x < 0.005) {
+        if (this.ball_v0_x < 0) {
+            if (-this.ball_v0_x < 0.005) {
                 this.ball_v0_x = 0;
             }
         }
+    }
+    make_control_panel() {
+        // Draw the scene's buttons, setup their actions and keyboard shortcuts, and monitor live measurements.
+        this.key_triggered_button("Start Game", ["s"], () => this.starting = !this.starting);
+        this.new_line();
+        this.key_triggered_button("Reset game", ["esc"], () => this.resetting = !this.resetting);
+        this.new_line();
+        this.key_triggered_button("Power Up", ["38"], () => this.attached = () => this.planet_2);
+        this.new_line();
+        this.key_triggered_button("Power Down", ["40"], () => this.attached = () => this.planet_3);
+        this.new_line();
+        this.key_triggered_button("Shoot", ["m"], () => this.attached = () => this.moon);
     }
 
     ball_table_collision_detection() {
@@ -379,12 +413,34 @@ export class Snooker extends Scene {
         const stick_transform = model_transform.times(Mat4.translation(0, 0, 0))
             .times(Mat4.rotation(Math.PI / 2, 0, 1, 0))
             .times(Mat4.scale(1,1,1));
-        this.shapes.stick.draw(context, program_state, stick_transform, this.materials.red_ball);
-        let ball_transform = model_transform.times(Mat4.translation(0.27,3.25,0))
-            .times(Mat4.scale(0.24, 0.24, 0.24));
-        let yball_transform = model_transform.times(Mat4.translation(-8,0,0));
-        this.shapes.ball.draw(context, program_state, ball_transform, this.materials.red_ball);
-        this.shapes.ball.draw(context, program_state, yball_transform, this.materials.yellow_ball);
+        //this.shapes.stick.draw(context, program_state, stick_transform, this.materials.red_ball);
+        let red_ball_1_transform = model_transform.times(Mat4.translation(3.54,0,0)).times(Mat4.scale(0.24, 0.24, 0.24));
+        let red_ball_2_transform = model_transform.times(Mat4.translation(4.08,0.3,0)).times(Mat4.scale(0.24, 0.24, 0.24));
+        let red_ball_3_transform = model_transform.times(Mat4.translation(4.08,-0.3,0)).times(Mat4.scale(0.24, 0.24, 0.24));
+        let red_ball_4_transform = model_transform.times(Mat4.translation(4.62,0.54,0)).times(Mat4.scale(0.24, 0.24, 0.24));
+        let red_ball_5_transform = model_transform.times(Mat4.translation(4.62,0,0)).times(Mat4.scale(0.24, 0.24, 0.24));
+        let red_ball_6_transform = model_transform.times(Mat4.translation(4.62,-0.54,0)).times(Mat4.scale(0.24, 0.24, 0.24));
+        let cue_ball_transform = model_transform.times(Mat4.translation(-5.6,-0.8,0)).times(Mat4.scale(0.24, 0.24, 0.24));
+        let yellow_ball_transform = model_transform.times(Mat4.translation(-3.3,1.6,0)).times(Mat4.scale(0.24, 0.24, 0.24));
+        let green_ball_transform = model_transform.times(Mat4.translation(-3.3,-1.6,0)).times(Mat4.scale(0.24, 0.24, 0.24));
+        let brown_ball_transform = model_transform.times(Mat4.translation(-3.3,0,0)).times(Mat4.scale(0.24, 0.24, 0.24));
+        let blue_ball_transform = model_transform.times(Mat4.translation(0,0,0)).times(Mat4.scale(0.24, 0.24, 0.24));
+        let pink_ball_transform = model_transform.times(Mat4.translation(2.95,0,0)).times(Mat4.scale(0.24, 0.24, 0.24));
+        let black_ball_transform = model_transform.times(Mat4.translation(5.32,0,0)).times(Mat4.scale(0.24, 0.24, 0.24));
+
+        this.shapes.ball.draw(context, program_state, red_ball_1_transform, this.materials.red_ball);
+        this.shapes.ball.draw(context, program_state, red_ball_2_transform, this.materials.red_ball);
+        this.shapes.ball.draw(context, program_state, red_ball_3_transform, this.materials.red_ball);
+        this.shapes.ball.draw(context, program_state, red_ball_4_transform, this.materials.red_ball);
+        this.shapes.ball.draw(context, program_state, red_ball_5_transform, this.materials.red_ball);
+        this.shapes.ball.draw(context, program_state, red_ball_6_transform, this.materials.red_ball);
+        this.shapes.ball.draw(context, program_state, cue_ball_transform, this.materials.cue_ball);
+        this.shapes.ball.draw(context, program_state, yellow_ball_transform, this.materials.yellow_ball);
+        this.shapes.ball.draw(context, program_state, green_ball_transform, this.materials.green_ball);
+        this.shapes.ball.draw(context, program_state, brown_ball_transform, this.materials.brown_ball);
+        this.shapes.ball.draw(context, program_state, blue_ball_transform, this.materials.blue_ball);
+        this.shapes.ball.draw(context, program_state, pink_ball_transform, this.materials.pink_ball);
+        this.shapes.ball.draw(context, program_state, black_ball_transform, this.materials.black_ball);
         // Update ball positions and handle collisions
         //     this.updateBalls(dt);
         //     this.handleBallCollisions();
@@ -395,7 +451,6 @@ export class Snooker extends Scene {
             // Update the position of the ball based on its velocity
             ball.position = ball.position.plus(ball.velocity.times(dt));
         }
-    }
 
     // let ball_transform = model_transform.times(Mat4.translation(15.69, 0, 0));
     // let cueballtransfrom = model_transform.times(Mat4.translation(-9.2, 0, 0));
@@ -419,13 +474,14 @@ export class Snooker extends Scene {
     //     vec3(11.54, 2.08, 0),             // Light-pink ball
     //     vec3(11.54, -2.08, 0),            // Light-brown ball
     //     vec3(15.14, 2.08, 0),             // Grey ball
-    //     vec3(15.14, -2.08, 0),            // Light-green ball
-    //     vec3(18.74, 0, 0)                 // Dark-blue ball
+    //     vec3(15.14, -2.08, 0),            // green ball
+    //     vec3(18.74, 0, 0)                 // blue ball
     // ];
     // for (let i = 0; i < ball_positions.length; i++) {
     //     let balling_transform = model_transform.times(Mat4.translation(ball_positions[i]));
     //     const ball_material = i === 0 ? this.materials.yellow_ball : this.materials.red_ball;
     //     this.shapes.ball.draw(context, program_state, balling_transform, this.materials.red_ball);
+    //     this.shapes.ball.draw(context, program_state, balling_transform, this.materials.yellow_ball);
     // }
     // const stick_transform = model_transform.times(Mat4.translation(-16, 0, 0))
     //     .times(Mat4.rotation(Math.PI / 2, 0, 1, 0))
@@ -437,7 +493,7 @@ export class Snooker extends Scene {
     // this.reset_balls();
     // }
 }
-
+}
 class Texture_Scroll_X extends Textured_Phong {
     // TODO:  Modify the shader below (right now it's just the same fragment shader as Textured_Phong) for requirement #6.
     fragment_glsl_code() {
