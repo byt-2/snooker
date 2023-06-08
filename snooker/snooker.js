@@ -103,7 +103,7 @@ export class Snooker extends Scene {
             table: new defs.Square(),
             // ball: new defs.Subdivision_Sphere(4),
             ball: new defs.Subdivision_Sphere(6),
-            stick: new Shape_From_File("assets/stick.obj"),
+            stick: new Shape_From_File("./assets/stick.obj"),
             // stick: new defs.Line(),
         };
 
@@ -119,7 +119,6 @@ export class Snooker extends Scene {
             red_ball: new Material(new Gouraud_Shader(), {
                 color: hex_color("#FF0000"),
                 ambient: 1, diffusivity: 1, specularity: 1,
-                // texture: new Texture("assets/rb.png")
             }),
             yellow_ball: new Material(new defs.Phong_Shader(), {
                 color: hex_color("#FFFF00"),
@@ -145,10 +144,10 @@ export class Snooker extends Scene {
                 color: hex_color("#000000"),
                 ambient: 1, diffusivity: 1, specularity: 1
             }),
-            stick: new Material(new defs.Textured_Phong(), {
+            stick: new Material(new defs.Phong_Shader(), {
                 // color: hex_color("#000000"),
                 ambient: 1, diffusivity: 1, specularity: 1,
-                // texture: new Texture("assets/stick.obj")
+              //  texture: new Texture("assets/stick.obj")
             }),
         };
 
@@ -342,11 +341,11 @@ export class Snooker extends Scene {
         // Draw the scene's buttons, setup their actions and keyboard shortcuts, and monitor live measurements.
         this.key_triggered_button("Start Game", ["s"], () => this.starting = !this.starting);
         this.new_line();
-        this.key_triggered_button("Reset game", ["esc"], () => this.resetting = !this.resetting);
+        this.key_triggered_button("Reset game", ["Escape"], () => this.starting = this.resetting );
         this.new_line();
-        this.key_triggered_button("Power Up", ["38"], () => this.attached = () => this.planet_2);
+        this.key_triggered_button("Power Up", ["ArrowUp"], () => this.attached = () => this.planet_2);
         this.new_line();
-        this.key_triggered_button("Power Down", ["40"], () => this.attached = () => this.planet_3);
+        this.key_triggered_button("Power Down", ["ArrowDown"], () => this.attached = () => this.planet_3);
         this.new_line();
         this.key_triggered_button("Shoot", ["m"], () => this.attached = () => this.moon);
     }
@@ -410,37 +409,39 @@ export class Snooker extends Scene {
         // }
 
         // Draw the stick
-        const stick_transform = model_transform.times(Mat4.translation(0, 0, 0))
-            .times(Mat4.rotation(Math.PI / 2, 0, 1, 0))
+        let stick_transform = model_transform.times(Mat4.translation(0, 0, 0))
+            //.times(Mat4.rotation(Math.PI / 2, 0, 1, 0))
             .times(Mat4.scale(1,1,1));
-        //this.shapes.stick.draw(context, program_state, stick_transform, this.materials.red_ball);
-        let red_ball_1_transform = model_transform.times(Mat4.translation(3.54,0,0)).times(Mat4.scale(0.24, 0.24, 0.24));
-        let red_ball_2_transform = model_transform.times(Mat4.translation(4.08,0.3,0)).times(Mat4.scale(0.24, 0.24, 0.24));
-        let red_ball_3_transform = model_transform.times(Mat4.translation(4.08,-0.3,0)).times(Mat4.scale(0.24, 0.24, 0.24));
-        let red_ball_4_transform = model_transform.times(Mat4.translation(4.62,0.54,0)).times(Mat4.scale(0.24, 0.24, 0.24));
-        let red_ball_5_transform = model_transform.times(Mat4.translation(4.62,0,0)).times(Mat4.scale(0.24, 0.24, 0.24));
-        let red_ball_6_transform = model_transform.times(Mat4.translation(4.62,-0.54,0)).times(Mat4.scale(0.24, 0.24, 0.24));
-        let cue_ball_transform = model_transform.times(Mat4.translation(-5.6,-0.8,0)).times(Mat4.scale(0.24, 0.24, 0.24));
-        let yellow_ball_transform = model_transform.times(Mat4.translation(-3.3,1.6,0)).times(Mat4.scale(0.24, 0.24, 0.24));
-        let green_ball_transform = model_transform.times(Mat4.translation(-3.3,-1.6,0)).times(Mat4.scale(0.24, 0.24, 0.24));
-        let brown_ball_transform = model_transform.times(Mat4.translation(-3.3,0,0)).times(Mat4.scale(0.24, 0.24, 0.24));
-        let blue_ball_transform = model_transform.times(Mat4.translation(0,0,0)).times(Mat4.scale(0.24, 0.24, 0.24));
-        let pink_ball_transform = model_transform.times(Mat4.translation(2.95,0,0)).times(Mat4.scale(0.24, 0.24, 0.24));
-        let black_ball_transform = model_transform.times(Mat4.translation(5.32,0,0)).times(Mat4.scale(0.24, 0.24, 0.24));
+        this.shapes.stick.draw(context, program_state, stick_transform, this.materials.stick);
+        if (this.starting) {
+            let red_ball_1_transform = model_transform.times(Mat4.translation(3.54, 0, 0)).times(Mat4.scale(0.24, 0.24, 0.24));
+            let red_ball_2_transform = model_transform.times(Mat4.translation(4.08, 0.3, 0)).times(Mat4.scale(0.24, 0.24, 0.24));
+            let red_ball_3_transform = model_transform.times(Mat4.translation(4.08, -0.3, 0)).times(Mat4.scale(0.24, 0.24, 0.24));
+            let red_ball_4_transform = model_transform.times(Mat4.translation(4.62, 0.54, 0)).times(Mat4.scale(0.24, 0.24, 0.24));
+            let red_ball_5_transform = model_transform.times(Mat4.translation(4.62, 0, 0)).times(Mat4.scale(0.24, 0.24, 0.24));
+            let red_ball_6_transform = model_transform.times(Mat4.translation(4.62, -0.54, 0)).times(Mat4.scale(0.24, 0.24, 0.24));
+            let cue_ball_transform = model_transform.times(Mat4.translation(-5.6, -0.8, 0)).times(Mat4.scale(0.24, 0.24, 0.24));
+            let yellow_ball_transform = model_transform.times(Mat4.translation(-3.3, 1.6, 0)).times(Mat4.scale(0.24, 0.24, 0.24));
+            let green_ball_transform = model_transform.times(Mat4.translation(-3.3, -1.6, 0)).times(Mat4.scale(0.24, 0.24, 0.24));
+            let brown_ball_transform = model_transform.times(Mat4.translation(-3.3, 0, 0)).times(Mat4.scale(0.24, 0.24, 0.24));
+            let blue_ball_transform = model_transform.times(Mat4.translation(0, 0, 0)).times(Mat4.scale(0.24, 0.24, 0.24));
+            let pink_ball_transform = model_transform.times(Mat4.translation(2.95, 0, 0)).times(Mat4.scale(0.24, 0.24, 0.24));
+            let black_ball_transform = model_transform.times(Mat4.translation(5.32, 0, 0)).times(Mat4.scale(0.24, 0.24, 0.24));
 
-        this.shapes.ball.draw(context, program_state, red_ball_1_transform, this.materials.red_ball);
-        this.shapes.ball.draw(context, program_state, red_ball_2_transform, this.materials.red_ball);
-        this.shapes.ball.draw(context, program_state, red_ball_3_transform, this.materials.red_ball);
-        this.shapes.ball.draw(context, program_state, red_ball_4_transform, this.materials.red_ball);
-        this.shapes.ball.draw(context, program_state, red_ball_5_transform, this.materials.red_ball);
-        this.shapes.ball.draw(context, program_state, red_ball_6_transform, this.materials.red_ball);
-        this.shapes.ball.draw(context, program_state, cue_ball_transform, this.materials.cue_ball);
-        this.shapes.ball.draw(context, program_state, yellow_ball_transform, this.materials.yellow_ball);
-        this.shapes.ball.draw(context, program_state, green_ball_transform, this.materials.green_ball);
-        this.shapes.ball.draw(context, program_state, brown_ball_transform, this.materials.brown_ball);
-        this.shapes.ball.draw(context, program_state, blue_ball_transform, this.materials.blue_ball);
-        this.shapes.ball.draw(context, program_state, pink_ball_transform, this.materials.pink_ball);
-        this.shapes.ball.draw(context, program_state, black_ball_transform, this.materials.black_ball);
+            this.shapes.ball.draw(context, program_state, red_ball_1_transform, this.materials.red_ball);
+            this.shapes.ball.draw(context, program_state, red_ball_2_transform, this.materials.red_ball);
+            this.shapes.ball.draw(context, program_state, red_ball_3_transform, this.materials.red_ball);
+            this.shapes.ball.draw(context, program_state, red_ball_4_transform, this.materials.red_ball);
+            this.shapes.ball.draw(context, program_state, red_ball_5_transform, this.materials.red_ball);
+            this.shapes.ball.draw(context, program_state, red_ball_6_transform, this.materials.red_ball);
+            this.shapes.ball.draw(context, program_state, cue_ball_transform, this.materials.cue_ball);
+            this.shapes.ball.draw(context, program_state, yellow_ball_transform, this.materials.yellow_ball);
+            this.shapes.ball.draw(context, program_state, green_ball_transform, this.materials.green_ball);
+            this.shapes.ball.draw(context, program_state, brown_ball_transform, this.materials.brown_ball);
+            this.shapes.ball.draw(context, program_state, blue_ball_transform, this.materials.blue_ball);
+            this.shapes.ball.draw(context, program_state, pink_ball_transform, this.materials.pink_ball);
+            this.shapes.ball.draw(context, program_state, black_ball_transform, this.materials.black_ball);
+        }
         // Update ball positions and handle collisions
         //     this.updateBalls(dt);
         //     this.handleBallCollisions();
@@ -460,28 +461,25 @@ export class Snooker extends Scene {
     // this.shapes.ball.draw(context, program_state, cueballtransfrom, this.materials.cue_ball);
     //
     // const ball_positions = [
-    //     vec3(0, 0, 0),                    // White ball (Cue ball)
-    //     vec3(0, 4.16, 0),                 // Red ball
-    //     vec3(0, -4.16, 0),                // Yellow ball
-    //     vec3(8.69, 0, 0),                 // Green ball
-    //     vec3(12.29, 2.08, 0),             // Brown ball
-    //     vec3(12.29, -2.08, 0),            // Blue ball
-    //     vec3(15.89, 4.16, 0),             // Pink ball
-    //     vec3(15.89, -4.16, 0),            // Black ball
-    //     vec3(4.34, 2.08, 0),              // Light-blue ball
-    //     vec3(4.34, -2.08, 0),             // Dark-green ball
-    //     vec3(7.94, 0, 0),                 // Orange ball
-    //     vec3(11.54, 2.08, 0),             // Light-pink ball
-    //     vec3(11.54, -2.08, 0),            // Light-brown ball
-    //     vec3(15.14, 2.08, 0),             // Grey ball
-    //     vec3(15.14, -2.08, 0),            // green ball
-    //     vec3(18.74, 0, 0)                 // blue ball
+    //     vec3(-5.6, -0.8, 0),                    //Cue ball
+    //     vec3(3.54, 0, 0),                       //Red ball 1
+    //     vec3(4.08,0.3,0),                       //Red ball 2
+    //     vec3(4.08,-0.3,0),                      //Red ball 3
+    //     vec3(4.62,0.54,0),                      //Red ball 4
+    //     vec3(4.62,0,0),                         //Red ball 5
+    //     vec3(4.62,-0.54,0),                     //Red ball 6
+    //     vec3(-3.3, 1.6, 0),                      // Yellow ball
+    //     vec3(-3.3, -1.6, 0),                      // Green ball
+    //     vec3(-3.3, 0, 0),                        // Brown ball
+    //     vec3(0, 0, 0),                          // Blue ball
+    //     vec3(2.95, 4.16, 0),                     // Pink ball
+    //     vec3(5.32, -4.16, 0),                   // Black ball
     // ];
     // for (let i = 0; i < ball_positions.length; i++) {
     //     let balling_transform = model_transform.times(Mat4.translation(ball_positions[i]));
     //     const ball_material = i === 0 ? this.materials.yellow_ball : this.materials.red_ball;
-    //     this.shapes.ball.draw(context, program_state, balling_transform, this.materials.red_ball);
-    //     this.shapes.ball.draw(context, program_state, balling_transform, this.materials.yellow_ball);
+    //     this.shapes.ball.draw(context, program_state, balling_transform, ball_material);
+    //     this.shapes.ball.draw(context, program_state, balling_transform, ball_material);
     // }
     // const stick_transform = model_transform.times(Mat4.translation(-16, 0, 0))
     //     .times(Mat4.rotation(Math.PI / 2, 0, 1, 0))
