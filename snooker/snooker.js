@@ -62,14 +62,54 @@ export class Snooker extends Scene {
         };
 
         this.cue_ball = {
-            velocity: vec(-0.1, -0.1),
-            position: vec(1, 1),
+            velocity: vec(0.1, -0.2),
+            position: vec(3, 0.8),
+        };
+
+        this.red_ball_1 = {
+            velocity: vec(0,0),
+            position: vec(3.54,0),
+        };
+
+        this.red_ball_2 = {
+            velocity: vec(0,0),
+            position: vec(4.08,0.3),
+        };
+
+        this.red_ball_3 = {
+            velocity: vec(0,0),
+            position: vec(4.08, -0.3),
+        };
+
+        this.yellow_ball = {
+            velocity: vec(0.2,-0.1),
+            position: vec(-3.38, 1.6),
+        };
+
+        this.green_ball = {
+            velocity: vec(0,0),
+            position: vec(-3.38, -1.6),
+        };
+
+        this.brown_ball = {
+            velocity: vec(0.3,0),
+            position: vec(-3.38, 0),
         };
 
         this.blue_ball = {
             velocity: vec(0,0),
             position: vec(0,0),
-        }
+        };
+
+        this.pink_ball = {
+            velocity: vec(0,0),
+            position: vec(2.95, 0),
+        };
+
+        this.black_ball = {
+            velocity: vec(0,0),
+            position: vec(5.32, 0),
+        };
 
         this.balls = []; // Array to store ball objects
 
@@ -158,29 +198,6 @@ export class Snooker extends Scene {
         }
     }
 
-    handleBallCollisions() {
-        const balls = this.balls;
-
-        for (let i = 0; i < balls.length; i++) {
-            for (let j = i + 1; j < balls.length; j++) {
-                const ball1 = balls[i];
-                const ball2 = balls[j];
-
-                const distance = ball1.position.minus(ball2.position).magnitude();
-
-                if (distance < ball1.radius + ball2.radius) {
-                    const collisionNormal = ball2.position.minus(ball1.position).normalized();
-                    const relativeVelocity = ball2.velocity.minus(ball1.velocity);
-                    const impulseMagnitude = (2 * relativeVelocity.dot(collisionNormal)) / (ball1.mass + ball2.mass);
-                    const impulse = collisionNormal.times(impulseMagnitude);
-
-                    ball1.velocity = ball1.velocity.plus(impulse.times(1 / ball1.mass));
-                    ball2.velocity = ball2.velocity.minus(impulse.times(1 / ball2.mass));
-                }
-            }
-        }
-    }
-
     move_ball(program_state, ball) {
         const t = program_state.animation_time / 1000, dt = program_state.animation_delta_time / 1000;
         const friction = 0.98;
@@ -189,8 +206,8 @@ export class Snooker extends Scene {
         ball.velocity[1] *= friction;
 
         // If the velocity is very small, set it to zero to stop the ball completely
-        if(Math.abs(ball.velocity[0]) < 0.0001) ball.velocity[0] = 0;
-        if(Math.abs(ball.velocity[1]) < 0.0001) ball.velocity[1] = 0;
+        if(Math.abs(ball.velocity[0]) < 0.0003) ball.velocity[0] = 0;
+        if(Math.abs(ball.velocity[1]) < 0.0003) ball.velocity[1] = 0;
 
         // Now add the (reduced) velocity to the ball's position
         ball.position[0] += ball.velocity[0]*t;
@@ -223,9 +240,18 @@ export class Snooker extends Scene {
         let dx = ball1.position[0] - ball2.position[0];
         let dy = ball1.position[1] - ball2.position[1];
         let distance = Math.sqrt(dx * dx + dy * dy);
-        let collision_feasibility = distance < 0.48;
+        let collision_feasibility = (distance < 0.46);
+        // let collision_feasibility = (dx <= 0.15 && dy <= 0.15);
         if (collision_feasibility) {
-            const damping = 0.9;  // Damping factor. Adjust as needed.
+            const damping = 0.96;  // Damping factor
+
+            // Calculate collision angle
+            let collisionAngle = Math.atan2(dy, dx);
+
+            // Calculate the minimum translation distance
+            let overlap = 0.46 - distance;
+            let separationX = overlap * Math.cos(collisionAngle);
+            let separationY = overlap * Math.sin(collisionAngle);
 
             // Swap velocities
             let tempVX = ball1.velocity[0];
@@ -236,6 +262,42 @@ export class Snooker extends Scene {
 
             ball2.velocity[0] = tempVX * damping;
             ball2.velocity[1] = tempVY * damping;
+
+            // Separate the balls to prevent overlapping
+            ball1.position[0] += separationX;
+            ball1.position[1] += separationY;
+            ball2.position[0] -= separationX;
+            ball2.position[1] -= separationY;
+
+            // if(ball2.velocity[0] === 0 && ball1.velocity[0] > 0)
+            //     ball1.velocity[0] = 0.001;
+            // else if(ball2.velocity[0] === 0 && ball1.velocity[0] < 0)
+            //     ball1.velocity[0] = -0.001;
+            // else
+            //     ball1.velocity[0] = ball2.velocity[0] * damping;
+            //
+            // if(ball2.velocity[1] === 0 && ball1.velocity[1] > 0)
+            //     ball1.velocity[1] = 0.001;
+            // else if(ball2.velocity[1] === 0 && ball1.velocity[1] < 0)
+            //     ball1.velocity[1] = -0.001;
+            // else
+            //     ball1.velocity[1] = ball2.velocity[1] * damping;
+            //
+            // if(ball1.velocity[0] === 0 && ball2.velocity[0] > 0)
+            //     ball2.velocity[0] = 0.001;
+            // if(ball1.velocity[0] === 0 && ball2.velocity[0] < 0)
+            //     ball2.velocity[0] = -0.001;
+            // else
+            //     ball2.velocity[0] = tempVX * damping;
+            //
+            // if(ball1.velocity[1] === 0 && ball2.velocity[1] > 0)
+            //     ball2.velocity[1] = 0.001;
+            // if(ball1.velocity[1] === 0 && ball2.velocity[1] < 0)
+            //     ball2.velocity[1] = -0.001;
+            // else
+            //     ball2.velocity[1] = tempVY * damping;
+
+
         }
         // let collisionAngle = Math.atan2(dy, dx);
         //
@@ -267,7 +329,7 @@ export class Snooker extends Scene {
     {
         const t = program_state.animation_time / 1000, dt = program_state.animation_delta_time / 1000;
 
-        let friction = 0.64;
+        let friction = 0.84;
         let ball_pos = ball.position;
         let ball_pos_x = ball.position[0], ball_pos_y = ball.position[1];
         let intersects_on_x_axis = false;
@@ -353,51 +415,155 @@ export class Snooker extends Scene {
             .times(Mat4.scale(1,1,1));
         this.shapes.stick.draw(context, program_state, stick_transform, this.materials.stick);
         if (this.starting) {
-            let red_ball_1_transform = model_transform.times(Mat4.translation(3.54, 0, 0)).times(Mat4.scale(0.24, 0.24, 0.24));
-            let red_ball_2_transform = model_transform.times(Mat4.translation(4.08, 0.3, 0)).times(Mat4.scale(0.24, 0.24, 0.24));
-            let red_ball_3_transform = model_transform.times(Mat4.translation(4.08, -0.3, 0)).times(Mat4.scale(0.24, 0.24, 0.24));
             let red_ball_4_transform = model_transform.times(Mat4.translation(4.62, 0.54, 0)).times(Mat4.scale(0.24, 0.24, 0.24));
             let red_ball_5_transform = model_transform.times(Mat4.translation(4.62, 0, 0)).times(Mat4.scale(0.24, 0.24, 0.24));
             let red_ball_6_transform = model_transform.times(Mat4.translation(4.62, -0.54, 0)).times(Mat4.scale(0.24, 0.24, 0.24));
-            // let cue_ball_transform = model_transform.times(Mat4.translation(-5.6, -0.8, 0)).times(Mat4.scale(0.24, 0.24, 0.24));
-            let yellow_ball_transform = model_transform.times(Mat4.translation(-3.38, 1.6, 0)).times(Mat4.scale(0.24, 0.24, 0.24));
-            let green_ball_transform = model_transform.times(Mat4.translation(-3.38, -1.6, 0)).times(Mat4.scale(0.24, 0.24, 0.24));
-            let brown_ball_transform = model_transform.times(Mat4.translation(-3.38, 0, 0)).times(Mat4.scale(0.24, 0.24, 0.24));
-            // let blue_ball_transform = model_transform.times(Mat4.translation(0, 0, 0)).times(Mat4.scale(0.24, 0.24, 0.24));
-            let pink_ball_transform = model_transform.times(Mat4.translation(2.95, 0, 0)).times(Mat4.scale(0.24, 0.24, 0.24));
-            let black_ball_transform = model_transform.times(Mat4.translation(5.32, 0, 0)).times(Mat4.scale(0.24, 0.24, 0.24));
 
             const stick_transform = model_transform.times(Mat4.translation(0, 0, 0))
             .times(Mat4.rotation(Math.PI / 2, 0, 1, 0))
             .times(Mat4.scale(1, 1, 1));
 
+            // this.shapes.ball.draw(context, program_state, red_ball_4_transform, this.materials.red_ball);
+            // this.shapes.ball.draw(context, program_state, red_ball_5_transform, this.materials.red_ball);
+            // this.shapes.ball.draw(context, program_state, red_ball_6_transform, this.materials.red_ball);
+
+
+            let cue_ball_transform = model_transform.times(Mat4.translation(this.cue_ball.position[0], this.cue_ball.position[1], 0)
+                .times(Mat4.scale(0.23, 0.23, 0.23)));
+            let red_ball_1_transform = model_transform.times(Mat4.translation(this.red_ball_1.position[0], this.red_ball_1.position[1], 0))
+                .times(Mat4.scale(0.24, 0.24, 0.24));
+            let red_ball_2_transform = model_transform.times(Mat4.translation(this.red_ball_2.position[0], this.red_ball_2.position[1], 0))
+                .times(Mat4.scale(0.24, 0.24, 0.24));
+            let red_ball_3_transform = model_transform.times(Mat4.translation(this.red_ball_3.position[0], this.red_ball_3.position[1], 0))
+                .times(Mat4.scale(0.24, 0.24, 0.24));
+            let yellow_ball_transform = model_transform.times(Mat4.translation(this.yellow_ball.position[0], this.yellow_ball.position[1], 0))
+                .times(Mat4.scale(0.24, 0.24, 0.24));
+            let green_ball_transform = model_transform.times(Mat4.translation(this.green_ball.position[0], this.green_ball.position[1], 0))
+                .times(Mat4.scale(0.24, 0.24, 0.24));
+            let brown_ball_transform = model_transform.times(Mat4.translation(this.brown_ball.position[0], this.brown_ball.position[1], 0))
+                .times(Mat4.scale(0.24, 0.24, 0.24));
+            let blue_ball_transform = model_transform.times(Mat4.translation(this.blue_ball.position[0], this.blue_ball.position[1], 0))
+                .times(Mat4.scale(0.24, 0.24, 0.24));
+            let pink_ball_transform = model_transform.times(Mat4.translation(this.pink_ball.position[0], this.pink_ball.position[1], 0))
+                .times(Mat4.scale(0.24, 0.24, 0.24));
+            let black_ball_transform = model_transform.times(Mat4.translation(this.black_ball.position[0], this.black_ball.position[1], 0))
+                .times(Mat4.scale(0.24, 0.24, 0.24));
+
+
+            this.shapes.ball.draw(context, program_state, cue_ball_transform, this.materials.cue_ball);
             this.shapes.ball.draw(context, program_state, red_ball_1_transform, this.materials.red_ball);
             this.shapes.ball.draw(context, program_state, red_ball_2_transform, this.materials.red_ball);
             this.shapes.ball.draw(context, program_state, red_ball_3_transform, this.materials.red_ball);
-            this.shapes.ball.draw(context, program_state, red_ball_4_transform, this.materials.red_ball);
-            this.shapes.ball.draw(context, program_state, red_ball_5_transform, this.materials.red_ball);
-            this.shapes.ball.draw(context, program_state, red_ball_6_transform, this.materials.red_ball);
-            // this.shapes.ball.draw(context, program_state, cue_ball_transform, this.materials.cue_ball);
             this.shapes.ball.draw(context, program_state, yellow_ball_transform, this.materials.yellow_ball);
             this.shapes.ball.draw(context, program_state, green_ball_transform, this.materials.green_ball);
             this.shapes.ball.draw(context, program_state, brown_ball_transform, this.materials.brown_ball);
-            // this.shapes.ball.draw(context, program_state, blue_ball_transform, this.materials.blue_ball);
+            this.shapes.ball.draw(context, program_state, blue_ball_transform, this.materials.blue_ball);
             this.shapes.ball.draw(context, program_state, pink_ball_transform, this.materials.pink_ball);
             this.shapes.ball.draw(context, program_state, black_ball_transform, this.materials.black_ball);
 
-            let cue_ball_transform = model_transform.times(Mat4.translation(this.cue_ball.position[0], this.cue_ball.position[1], 0).times(Mat4.scale(0.24, 0.24, 0.24)));
-            let blue_ball_transform = model_transform.times(Mat4.translation(this.blue_ball.position[0], this.blue_ball.position[1], 0)).times(Mat4.scale(0.24, 0.24, 0.24));
-
-            this.shapes.ball.draw(context, program_state, cue_ball_transform, this.materials.cue_ball);
-            this.shapes.ball.draw(context, program_state, blue_ball_transform, this.materials.blue_ball);
-
             this.move_ball(program_state, this.cue_ball);
+            this.move_ball(program_state, this.red_ball_1);
+            this.move_ball(program_state, this.red_ball_2);
+            this.move_ball(program_state, this.red_ball_3);
+            this.move_ball(program_state, this.yellow_ball);
+            this.move_ball(program_state, this.green_ball);
+            this.move_ball(program_state, this.brown_ball);
             this.move_ball(program_state, this.blue_ball);
+            this.move_ball(program_state, this.pink_ball);
+            this.move_ball(program_state, this.black_ball);
+
+
             this.ball_table_collision_detection(program_state, this.cue_ball);
+            this.ball_table_collision_detection(program_state, this.red_ball_1);
+            this.ball_table_collision_detection(program_state, this.red_ball_2);
+            this.ball_table_collision_detection(program_state, this.red_ball_3);
+            this.ball_table_collision_detection(program_state, this.yellow_ball);
+            this.ball_table_collision_detection(program_state, this.green_ball);
+            this.ball_table_collision_detection(program_state, this.brown_ball);
             this.ball_table_collision_detection(program_state, this.blue_ball);
+            this.ball_table_collision_detection(program_state, this.pink_ball);
+            this.ball_table_collision_detection(program_state, this.black_ball);
+
+
             this.make_goal(program_state, this.cue_ball);
+            this.make_goal(program_state, this.red_ball_1);
+            this.make_goal(program_state, this.red_ball_2);
+            this.make_goal(program_state, this.red_ball_3);
+            this.make_goal(program_state, this.yellow_ball);
+            this.make_goal(program_state, this.green_ball);
+            this.make_goal(program_state, this.brown_ball);
             this.make_goal(program_state, this.blue_ball);
+            this.make_goal(program_state, this.pink_ball);
+            this.make_goal(program_state, this.black_ball);
+
+
+            // Collision for cue_ball
+            this.handleCollision(this.cue_ball, this.red_ball_1);
+            this.handleCollision(this.cue_ball, this.red_ball_2);
+            this.handleCollision(this.cue_ball, this.red_ball_3);
+            this.handleCollision(this.cue_ball, this.yellow_ball);
+            this.handleCollision(this.cue_ball, this.green_ball);
+            this.handleCollision(this.cue_ball, this.brown_ball);
             this.handleCollision(this.cue_ball, this.blue_ball);
+            this.handleCollision(this.cue_ball, this.pink_ball);
+            this.handleCollision(this.cue_ball, this.black_ball);
+
+            // Collision for red_ball_1
+            // this.handleCollision(this.red_ball_1, this.cue_ball);
+            this.handleCollision(this.red_ball_1, this.red_ball_2);
+            this.handleCollision(this.red_ball_1, this.red_ball_3);
+            this.handleCollision(this.red_ball_1, this.yellow_ball);
+            this.handleCollision(this.red_ball_1, this.green_ball);
+            this.handleCollision(this.red_ball_1, this.brown_ball);
+            this.handleCollision(this.red_ball_1, this.blue_ball);
+            this.handleCollision(this.red_ball_1, this.pink_ball);
+            this.handleCollision(this.red_ball_1, this.black_ball);
+
+            // Collision for red_ball_2
+            this.handleCollision(this.red_ball_2, this.red_ball_3);
+            this.handleCollision(this.red_ball_2, this.yellow_ball);
+            this.handleCollision(this.red_ball_2, this.green_ball);
+            this.handleCollision(this.red_ball_2, this.brown_ball);
+            this.handleCollision(this.red_ball_2, this.blue_ball);
+            this.handleCollision(this.red_ball_2, this.pink_ball);
+            this.handleCollision(this.red_ball_2, this.black_ball);
+
+            // Collision for red_ball_3
+            this.handleCollision(this.red_ball_3, this.yellow_ball);
+            this.handleCollision(this.red_ball_3, this.green_ball);
+            this.handleCollision(this.red_ball_3, this.brown_ball);
+            this.handleCollision(this.red_ball_3, this.blue_ball);
+            this.handleCollision(this.red_ball_3, this.pink_ball);
+            this.handleCollision(this.red_ball_3, this.black_ball);
+
+            // Collision for yellow_ball
+            this.handleCollision(this.yellow_ball, this.green_ball);
+            this.handleCollision(this.yellow_ball, this.brown_ball);
+            this.handleCollision(this.yellow_ball, this.blue_ball);
+            this.handleCollision(this.yellow_ball, this.pink_ball);
+            this.handleCollision(this.yellow_ball, this.black_ball);
+
+            // Collision for green_ball
+            this.handleCollision(this.green_ball, this.brown_ball);
+            this.handleCollision(this.green_ball, this.blue_ball);
+            this.handleCollision(this.green_ball, this.pink_ball);
+            this.handleCollision(this.green_ball, this.black_ball);
+
+            // Collision for brown_ball
+            this.handleCollision(this.brown_ball, this.blue_ball);
+            this.handleCollision(this.brown_ball, this.pink_ball);
+            this.handleCollision(this.brown_ball, this.black_ball);
+
+            // Collision for blue_ball
+            this.handleCollision(this.blue_ball, this.pink_ball);
+            this.handleCollision(this.blue_ball, this.black_ball);
+
+            // Collision for pink_ball
+            this.handleCollision(this.pink_ball, this.black_ball);
+
+
+
+
         }
     }
 
