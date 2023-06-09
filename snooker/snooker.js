@@ -901,14 +901,29 @@ export class Snooker extends Scene {
 
     power_stick() {
         if (this.power_up) {
+            // if (this.angle1 > 0)
+            //     this.stick_transform = this.stick_transform.times(Mat4.translation(0.1, 0, 0));
+            // if (this.angle1 <0)
+            //     this.stick_transform = this.stick_transform.times(Mat4.translation(-0.1, 0, 0));
+            // if (this.angle2 > 0)
+            //     this.stick_transform = this.stick_transform.times(Mat4.translation(0, 0.1, 0));
+            // if (this.angle2 < 0)
+            //     this.stick_transform = this.stick_transform.times(Mat4.translation(0, -0.1, 0));
+
             if (this.angle1 > 0)
-                this.stick_transform = this.stick_transform.times(Mat4.translation(0.1, 0, 0));
+                this.stick.position[0] += 0.1;
             if (this.angle1 <0)
-                this.stick_transform = this.stick_transform.times(Mat4.translation(-0.1, 0, 0));
+                this.stick.position[0] -= 0.1;
             if (this.angle2 > 0)
-                this.stick_transform = this.stick_transform.times(Mat4.translation(0, 0.1, 0));
+                this.stick.position[1] += 0.1;
             if (this.angle2 < 0)
-                this.stick_transform = this.stick_transform.times(Mat4.translation(0, -0.1, 0));
+                this.stick.position[1] -= 0.1;
+
+            this.stick_transform = Mat4.identity()
+                .times(Mat4.translation(this.new_position[0], this.new_position[1], 0))
+                .times(Mat4.rotation(this.rotation_angle, 0, 0, 1))
+                .times(Mat4.translation(this.stick.position[0], this.stick.position[1], 0))
+                .times(Mat4.scale(1.8, 0.14, 1));
 
             // if (this.angle1 > 0)
             //     this.stick_transform = Mat4.identity()
@@ -943,15 +958,33 @@ export class Snooker extends Scene {
 
             this.power_up = false;
         }
+
         if (this.power_down) {
+
             if (this.angle1 > 0)
-                this.stick_transform = this.stick_transform.times(Mat4.translation(-0.1, 0, 0));
+                this.stick.position[0] -= 0.1;
             if (this.angle1 <0)
-                this.stick_transform = this.stick_transform.times(Mat4.translation(0.1, 0, 0));
+                this.stick.position[0] += 0.1;
             if (this.angle2 > 0)
-                this.stick_transform = this.stick_transform.times(Mat4.translation(0, -0.1, 0));
+                this.stick.position[1] -= 0.1;
             if (this.angle2 < 0)
-                this.stick_transform = this.stick_transform.times(Mat4.translation(0, 0.1, 0));
+                this.stick.position[1] += 0.1;
+
+            // if (this.angle1 > 0)
+            //     this.stick_transform = this.stick_transform.times(Mat4.translation(-0.1, 0, 0));
+            // if (this.angle1 <0)
+            //     this.stick_transform = this.stick_transform.times(Mat4.translation(0.1, 0, 0));
+            // if (this.angle2 > 0)
+            //     this.stick_transform = this.stick_transform.times(Mat4.translation(0, -0.1, 0));
+            // if (this.angle2 < 0)
+            //     this.stick_transform = this.stick_transform.times(Mat4.translation(0, 0.1, 0));
+
+            this.stick_transform = Mat4.identity()
+                .times(Mat4.translation(this.new_position[0], this.new_position[1], 0))
+                .times(Mat4.rotation(this.rotation_angle, 0, 0, 1))
+                .times(Mat4.translation(this.stick.position[0], this.stick.position[1], 0))
+                .times(Mat4.scale(1.8, 0.14, 1));
+
             this.power_down = false;
         }
     }
