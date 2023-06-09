@@ -1,6 +1,6 @@
 import {defs, tiny} from './examples/common.js';
 import { Shape_From_File } from './examples/obj-file-demo.js';
-import {Text_Line} from "./examples/text-demo.js";
+// import {Text_Line} from "./examples/text-demo.js";
 
 const {
     Vector, Vector3, vec, vec3, vec4, color, hex_color, Shader, Matrix, Mat4, Light, Shape, Material, Scene, Texture
@@ -15,7 +15,7 @@ export class Snooker extends Scene {
             table: new defs.Square(),
             ball: new defs.Subdivision_Sphere(6),
             //stick: new Shape_From_File("./assets/stick.obj"),
-            text: new Text_Line(35),
+            // text: new Text_Line(35),
             // text: new defs.Square(),
             stick: new defs.Square(),
         };
@@ -62,10 +62,10 @@ export class Snooker extends Scene {
                 ambient: 1, diffusivity: 1, specularity: 1,
                 //  texture: new Texture("assets/stick.obj")
             }),
-            score: new Material(new defs.Textured_Phong(1), {
-                ambient: 1, diffusivity: 0, specularity: 0, color: hex_color("#FFFF00"),
-                texture: new Texture("assets/text.png")
-            }),
+            // score: new Material(new defs.Textured_Phong(1), {
+            //     ambient: 1, diffusivity: 0, specularity: 0, color: hex_color("#FFFF00"),
+            //     texture: new Texture("assets/text.png")
+            // }),
         };
 
         this.cue_ball = {
@@ -129,15 +129,6 @@ export class Snooker extends Scene {
             score: 7,
         };
 
-        // this.stick = {
-        //     velocity: vec(0,0),
-        //     // position: vec(this.cue_ball.position[0] + 1, this.cue_ball.position[1] + 14.2),
-        //     position: vec(0,0),
-        // };
-
-        // this.angle1 = Math.cos(Math.atan2(this.stick.position[1],this.stick.position[0]));
-        // this.angle2 = Math.sin(Math.atan2(this.stick.position[1],this.stick.position[0]));
-
         this.radius = 2.2;  // This is your desired radius of rotation
         this.rotation_angle = Math.PI*7/6;  // This is the angle by which you want to rotate the stick.
         this.rotation_point = vec(this.cue_ball.position[0], this.cue_ball.position[1]);  // The point around which you want to rotate the stick.
@@ -160,13 +151,6 @@ export class Snooker extends Scene {
             .times(Mat4.translation(this.stick.position[0]-1, this.stick.position[1]-1, 0))
             .times(Mat4.scale(1.8, 0.14, 1));
 
-        // this.stick = {
-        //     velocity: vec(0,0),
-        //     // position: vec(this.cue_ball.position[0] + 1, this.cue_ball.position[1] + 14.2),
-        //     position: vec(this.rotation_point[0] + this.radius * Math.cos(this.rotation_angle),
-        //         this.rotation_point[1] + this.radius * Math.sin(this.rotation_angle)),
-        // };
-
         this.max_score = 30;
         this.score = {
             player1: 0,
@@ -187,6 +171,7 @@ export class Snooker extends Scene {
         this.rotate_left = false;
         this.rotate_right = false;
         this.shoot = false;
+        this.next_pos = false;
     }
 
     updateScore(player) {
@@ -275,7 +260,7 @@ export class Snooker extends Scene {
 
         if(this.goal_on_middle || this.goal_on_left_right)
         {
-            ball.position = vec(-9999, -9999);
+            ball.position = vec(9999, 9999);
         }
     }
 
@@ -343,16 +328,24 @@ export class Snooker extends Scene {
             let tempVX = ball.velocity[0];
             let tempVY = ball.velocity[1];
 
-            ball.velocity[0] = -this.stick.velocity[0] * damping;
-            ball.velocity[1] = this.stick.velocity[2] * damping;
+            if (this.rotation_angle > Math.PI/2 && this.rotation_angle < Math.PI*3/2) {
+                ball.velocity[0] = -this.stick.velocity[0] * damping;
+                ball.velocity[1] = this.stick.velocity[2] * damping;
+            }
+
+            if (this.rotation_angle < Math.PI/2 || this.rotation_angle > Math.PI*3/2) {
+                ball.velocity[0] = this.stick.velocity[0] * damping;
+                ball.velocity[1] = this.stick.velocity[2] * damping;
+            }
+
             // console.log(this.stick.velocity);
             this.stick.velocity[0] = 0;
             this.stick.velocity[1] = 0;
             this.stick.velocity[2] = 0;
 
             //make stick disappear
-            this.stick.position[0] = -10000000;
-            this.stick.position[1] = -10000000;
+            this.stick.position[0] = 10000000;
+            this.stick.position[1] = 10000000;
 
         }
     }
@@ -400,75 +393,66 @@ export class Snooker extends Scene {
 
     power_stick() {
         if (this.power_up) {
-            // if (this.angle1 > 0)
-            //     this.stick_transform = this.stick_transform.times(Mat4.translation(0.1, 0, 0));
-            // if (this.angle1 <0)
-            //     this.stick_transform = this.stick_transform.times(Mat4.translation(-0.1, 0, 0));
-            // if (this.angle2 > 0)
-            //     this.stick_transform = this.stick_transform.times(Mat4.translation(0, 0.1, 0));
-            // if (this.angle2 < 0)
-            //     this.stick_transform = this.stick_transform.times(Mat4.translation(0, -0.1, 0));
 
-            // if (this.angle1 > 0) {
-            //     this.stick.position[0] += 0.1;
-            //     this.stick.velocity[0] -= 0.03;
-            // }
-            // if (this.angle1 <0) {
-            //     this.stick.position[0] -= 0.1;
-            //     this.stick.velocity[0] += 0.03;
-            // }
-            // if (this.angle2 > 0) {
-            //     this.stick.position[1] += 0.1;
-            //     this.stick.velocity[1] -= 0.03;
-            // }
-            // if (this.angle2 < 0) {
-            //     this.stick.position[1] -= 0.1;
-            //     this.stick.velocity[1] += 0.03;
-            // }
+            if (this.rotation_angle > Math.PI/2 && this.rotation_angle < Math.PI*3/2) {
+                this.stick.position[0] -= 0.1 * Math.cos(this.rotation_angle);
 
-            this.stick.position[0] -= 0.1 * Math.cos(this.rotation_angle);
-            // this.stick.position[1] - 0.1 * Math.sin(this.rotation_angle);
-            this.stick.velocity[0] += 0.1 * Math.cos(this.rotation_angle);
-            this.stick.velocity[2] -= 0.1 * Math.sin(this.rotation_angle);
+                // this.stick.position[1] -= 0.1 * Math.sin(this.rotation_angle);
+                this.stick.velocity[0] += 0.01 * Math.cos(this.rotation_angle);
+                this.stick.velocity[2] -= 0.01 * Math.sin(this.rotation_angle);
 
+                this.rotation_point = vec(this.cue_ball.position[0], this.cue_ball.position[1]);  // The point around which you want to rotate the stick.
+                // Calculate the new position of the stick after the rotation.
+                this.new_position = vec(
+                    this.rotation_point[0] + this.radius * Math.cos(this.rotation_angle),
+                    this.rotation_point[1] + this.radius * Math.sin(this.rotation_angle),
+                );
+                this.stick_transform = Mat4.identity()
+                    .times(Mat4.translation(this.new_position[0], this.new_position[1], 0))
+                    .times(Mat4.rotation(this.rotation_angle, 0, 0, 1))
+                    .times(Mat4.translation(this.stick.position[0] - 1, 0, 0))
+                    .times(Mat4.scale(1.8, 0.14, 1));
+            }
 
-            this.stick_transform = Mat4.identity()
-                .times(Mat4.translation(this.new_position[0], this.new_position[1], 0))
-                .times(Mat4.rotation(this.rotation_angle, 0, 0, 1))
-                .times(Mat4.translation(this.stick.position[0]-1, 0, 0))
-                .times(Mat4.scale(1.8, 0.14, 1));
+            else if (this.rotation_angle == Math.PI/2) {
+                this.stick.position[0] -= 0.1 ;
 
-            // if (this.angle1 > 0)
-            //     this.stick_transform = Mat4.identity()
-            //         .times(Mat4.translation(this.new_position[0], this.new_position[1], 0))
-            //         .times(Mat4.rotation(this.rotation_angle, 0, 0, 1))
-            //         .times(Mat4.scale(1.8, 0.14, 1))
-            //         .times(Mat4.translation(0.1, 0, 0));
-            //
-            // if (this.angle1 <0)
-            //     this.stick_transform = Mat4.identity()
-            //         .times(Mat4.translation(this.new_position[0], this.new_position[1], 0))
-            //         .times(Mat4.rotation(this.rotation_angle, 0, 0, 1))
-            //         .times(Mat4.scale(1.8, 0.14, 1))
-            //         .times(Mat4.translation(-0.1, 0, 0));
-            //
-            // if (this.angle2 > 0)
-            //     this.stick_transform = Mat4.identity()
-            //         .times(Mat4.translation(this.new_position[0], this.new_position[1], 0))
-            //         .times(Mat4.rotation(this.rotation_angle, 0, 0, 1))
-            //         .times(Mat4.scale(1.8, 0.14, 1)).times(Mat4.translation(0, 0.1, 0));
-            //
-            // if (this.angle2 < 0)
-            //     this.stick_transform = Mat4.identity()
-            //         .times(Mat4.translation(this.new_position[0], this.new_position[1], 0))
-            //         .times(Mat4.rotation(this.rotation_angle, 0, 0, 1))
-            //         .times(Mat4.scale(1.8, 0.14, 1)).times(Mat4.translation(0, -0.1, 0));
+                this.stick.position[1] += 0.1 ;
+                this.stick.velocity[0] += 0.01;
+                this.stick.velocity[2] -= 0.01;
 
-                // Mat4.identity()
-                // .times(Mat4.translation(this.new_position[0], this.new_position[1], 0))
-                // .times(Mat4.rotation(this.rotation_angle, 0, 0, 1))
-                // .times(Mat4.scale(1.8, 0.14, 1))
+                this.rotation_point = vec(this.cue_ball.position[0], this.cue_ball.position[1]);  // The point around which you want to rotate the stick.
+                // Calculate the new position of the stick after the rotation.
+                this.new_position = vec(
+                    this.rotation_point[0] + this.radius * Math.cos(this.rotation_angle),
+                    this.rotation_point[1] + this.radius * Math.sin(this.rotation_angle),
+                );
+                this.stick_transform = Mat4.identity()
+                    .times(Mat4.translation(this.new_position[0], this.new_position[1], 0))
+                    .times(Mat4.rotation(this.rotation_angle, 0, 0, 1))
+                    .times(Mat4.translation(this.stick.position[0] - 1, this.stick.position[1] - 1, 0))
+                    .times(Mat4.scale(1.8, 0.14, 1));
+            }
 
+            else if (this.rotation_angle < Math.PI/2 || this.rotation_angle > Math.PI*3/2) {
+                this.stick.position[0] += 0.1 * Math.cos(this.rotation_angle);
+
+                // this.stick.position[1] -= 0.1 * Math.sin(this.rotation_angle);
+                this.stick.velocity[0] -= 0.01 * Math.cos(this.rotation_angle);
+                this.stick.velocity[2] -= 0.01 * Math.sin(this.rotation_angle);
+
+                this.rotation_point = vec(this.cue_ball.position[0], this.cue_ball.position[1]);  // The point around which you want to rotate the stick.
+                // Calculate the new position of the stick after the rotation.
+                this.new_position = vec(
+                    this.rotation_point[0] + this.radius * Math.cos(this.rotation_angle),
+                    this.rotation_point[1] + this.radius * Math.sin(this.rotation_angle),
+                );
+                this.stick_transform = Mat4.identity()
+                    .times(Mat4.translation(this.new_position[0], this.new_position[1], 0))
+                    .times(Mat4.rotation(this.rotation_angle, 0, 0, 1))
+                    .times(Mat4.translation(this.stick.position[0] - 1, this.stick.position[1] - 1, 0))
+                    .times(Mat4.scale(1.8, 0.14, 1));
+            }
             this.power_up = false;
         }
 
@@ -483,15 +467,6 @@ export class Snooker extends Scene {
             if (this.angle2 < 0)
                 this.stick.position[1] += 0.1;
 
-            // if (this.angle1 > 0)
-            //     this.stick_transform = this.stick_transform.times(Mat4.translation(-0.1, 0, 0));
-            // if (this.angle1 <0)
-            //     this.stick_transform = this.stick_transform.times(Mat4.translation(0.1, 0, 0));
-            // if (this.angle2 > 0)
-            //     this.stick_transform = this.stick_transform.times(Mat4.translation(0, -0.1, 0));
-            // if (this.angle2 < 0)
-            //     this.stick_transform = this.stick_transform.times(Mat4.translation(0, 0.1, 0));
-
             this.stick_transform = Mat4.identity()
                 .times(Mat4.translation(this.new_position[0], this.new_position[1], 0))
                 .times(Mat4.rotation(this.rotation_angle, 0, 0, 1))
@@ -501,7 +476,7 @@ export class Snooker extends Scene {
             this.power_down = false;
         }
 
-        console.log(this.stick.velocity);
+        // console.log(this.stick.velocity);
 
     }
 
@@ -530,6 +505,26 @@ export class Snooker extends Scene {
                 .times(Mat4.scale(1.8, 0.14, 1));
             this.rotate_right = false;
         }
+
+        console.log(this.rotation_angle);
+    }
+
+    shoot_ball(program_state) {
+        if (this.shoot) {
+            this.move_stick(program_state, this.stick);
+            this.rotation_point = vec(this.cue_ball.position[0], this.cue_ball.position[1]);  // The point around which you want to rotate the stick.
+            // Calculate the new position of the stick after the rotation.
+            this.new_position = vec(
+                this.rotation_point[0] + this.radius * Math.cos(this.rotation_angle),
+                this.rotation_point[1] + this.radius * Math.sin(this.rotation_angle),
+            );
+            this.stick_transform = Mat4.identity()
+                .times(Mat4.translation(this.new_position[0], this.new_position[1], 0))
+                .times(Mat4.rotation(this.rotation_angle, 0, 0, 1))
+                .times(Mat4.translation(this.stick.position[0]-1, this.stick.position[1]-1, 0))
+                .times(Mat4.scale(1.8, 0.14, 1));
+            // this.shoot = false;
+        }
     }
 
     make_control_panel() {
@@ -547,6 +542,8 @@ export class Snooker extends Scene {
         this.key_triggered_button("Rotate clockwise", ["ArrowRight"], () => this.rotate_right = !this.rotate_right);
         this.new_line();
         this.key_triggered_button("Shoot", ["m"], () => this.shoot = !this.shoot);
+        this.new_line();
+        this.key_triggered_button("Next Possession", ["n"], () => this.next_pos = !this.next_pos);
     }
 
     display(context, program_state) {
@@ -579,26 +576,6 @@ export class Snooker extends Scene {
             let cue_ball_transform = model_transform.times(Mat4.translation(this.cue_ball.position[0], this.cue_ball.position[1], 0)
                 .times(Mat4.scale(0.23, 0.23, 0.23)));
 
-            let radius = 2.2;  // This is your desired radius of rotation
-            let rotation_angle = Math.PI*7/6;  // This is the angle by which you want to rotate the stick.
-            let rotation_point = vec(this.cue_ball.position[0], this.cue_ball.position[1]);  // The point around which you want to rotate the stick.
-            // Calculate the new position of the stick after the rotation.
-            let new_position = vec(
-                rotation_point[0] + radius * Math.cos(rotation_angle),
-                rotation_point[1] + radius * Math.sin(rotation_angle)
-            );
-            // Now, translate and rotate the stick according to the new position.
-            // let stick_transform = model_transform
-            //     .times(Mat4.translation(new_position[0], new_position[1], 0))
-            //     .times(Mat4.rotation(rotation_angle, 0, 0, 1))
-            //     .times(Mat4.scale(1.8, 0.14, 1));
-
-            // let stick_transform = model_transform
-            //     .times(Mat4.translation(this.new_position[0], this.new_position[1], 0))
-            //     .times(Mat4.rotation(this.rotation_angle, 0, 0, 1))
-            //     .times(Mat4.scale(1.8, 0.14, 1))
-            //     .times(Mat4.translation(1,1,0));
-
             let red_ball_1_transform = model_transform.times(Mat4.translation(this.red_ball_1.position[0], this.red_ball_1.position[1], 0))
                 .times(Mat4.scale(0.24, 0.24, 0.24));
             let red_ball_2_transform = model_transform.times(Mat4.translation(this.red_ball_2.position[0], this.red_ball_2.position[1], 0))
@@ -618,11 +595,6 @@ export class Snooker extends Scene {
             let black_ball_transform = model_transform.times(Mat4.translation(this.black_ball.position[0], this.black_ball.position[1], 0))
                 .times(Mat4.scale(0.24, 0.24, 0.24));
 
-            // this.stick_transform = this.stick_transform
-            //     .times(Mat4.translation(this.new_position[0], this.new_position[1], 0))
-            //     .times(Mat4.rotation(this.rotation_angle, 0, 0, 1))
-            //     .times(Mat4.scale(1.8, 0.14, 1));
-
             //create all balls
             this.shapes.ball.draw(context, program_state, cue_ball_transform, this.materials.cue_ball);
             this.shapes.ball.draw(context, program_state, red_ball_1_transform, this.materials.red_ball);
@@ -641,17 +613,26 @@ export class Snooker extends Scene {
 
             this.power_stick();
             this.rotate_stick();
-            // console.log(this.stick.position);
-
+            this.shoot_ball(program_state);
             // start ball movement
-            if (this.shoot) {
-                this.move_stick(program_state, this.stick);
-                this.stick_transform = Mat4.identity()
-                    .times(Mat4.translation(this.new_position[0], this.new_position[1], 0))
-                    .times(Mat4.rotation(this.rotation_angle, 0, 0, 1))
-                    .times(Mat4.translation(this.stick.position[0]-1, this.stick.position[1]-1, 0))
-                    .times(Mat4.scale(1.8, 0.14, 1));
-            }
+            // if (this.shoot) {
+            //     this.move_stick(program_state, this.stick);
+            //     this.rotation_point = vec(this.cue_ball.position[0], this.cue_ball.position[1]);  // The point around which you want to rotate the stick.
+            //     // Calculate the new position of the stick after the rotation.
+            //     this.new_position = vec(
+            //         this.rotation_point[0] + this.radius * Math.cos(this.rotation_angle),
+            //         this.rotation_point[1] + this.radius * Math.sin(this.rotation_angle),
+            //     );
+            //     this.stick_transform = Mat4.identity()
+            //         .times(Mat4.translation(this.new_position[0], this.new_position[1], 0))
+            //         .times(Mat4.rotation(this.rotation_angle, 0, 0, 1))
+            //         .times(Mat4.translation(this.stick.position[0]-1, this.stick.position[1]-1, 0))
+            //         .times(Mat4.scale(1.8, 0.14, 1));
+            //     // this.shoot = false;
+            // }
+
+
+            // console.log(this.cue_ball.velocity);
 
             this.cue_stick_collision(this.cue_ball);
             this.stick_transform = Mat4.identity()
@@ -659,6 +640,31 @@ export class Snooker extends Scene {
                 .times(Mat4.rotation(this.rotation_angle, 0, 0, 1))
                 .times(Mat4.translation(this.stick.position[0]-1, this.stick.position[1]-1, 0))
                 .times(Mat4.scale(1.8, 0.14, 1));
+
+            if (Math.abs(this.stick.position[0]) > 1000 || Math.abs(this.stick.position[1]) > 1000)
+                this.shoot = false;
+
+            if (Math.abs(this.cue_ball.position[0]) > 100)
+                this.cue_ball.position = vec(-5, -0.8);
+
+            //new possession
+            if (this.next_pos){
+                this.stick.position = vec(1,1);
+                this.stick.velocity = vec3(0,0,0);
+                this.rotation_angle = Math.PI*7/6;
+                this.rotation_point = vec(this.cue_ball.position[0], this.cue_ball.position[1]);  // The point around which you want to rotate the stick.
+                // Calculate the new position of the stick after the rotation.
+                this.new_position = vec(
+                    this.rotation_point[0] + this.radius * Math.cos(this.rotation_angle),
+                    this.rotation_point[1] + this.radius * Math.sin(this.rotation_angle),
+                );
+                this.stick_transform = Mat4.identity()
+                    .times(Mat4.translation(this.new_position[0], this.new_position[1], 0))
+                    .times(Mat4.rotation(this.rotation_angle, 0, 0, 1))
+                    .times(Mat4.translation(this.stick.position[0]-1, this.stick.position[1]-1, 0))
+                    .times(Mat4.scale(1.8, 0.14, 1));
+                this.next_pos = false;
+            }
 
             this.move_ball(program_state, this.cue_ball);
             this.move_ball(program_state, this.red_ball_1);
@@ -670,8 +676,6 @@ export class Snooker extends Scene {
             this.move_ball(program_state, this.blue_ball);
             this.move_ball(program_state, this.pink_ball);
             this.move_ball(program_state, this.black_ball);
-
-
 
             // ball table collision
             this.ball_table_collision_detection(program_state, this.cue_ball);
@@ -760,6 +764,7 @@ export class Snooker extends Scene {
             // Collision for pink_ball
             this.handleCollision(this.pink_ball, this.black_ball);
 
+
         }
 
         // reset ball positions & velocities
@@ -788,6 +793,8 @@ export class Snooker extends Scene {
             this.blue_ball.velocity = vec(0,0);
             this.pink_ball.velocity = vec(0,0);
             this.black_ball.velocity = vec(0,0);
+
+            this.resetting = false;
         }
     }
 }
