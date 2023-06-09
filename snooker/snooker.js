@@ -14,9 +14,10 @@ export class Snooker extends Scene {
         this.shapes = {
             table: new defs.Square(),
             ball: new defs.Subdivision_Sphere(6),
-            stick: new Shape_From_File("./assets/stick.obj"),
+            //stick: new Shape_From_File("./assets/stick.obj"),
             text: new Text_Line(35),
             // text: new defs.Square(),
+            stick: new defs.Square(),
         };
 
         this.materials = {
@@ -57,19 +58,19 @@ export class Snooker extends Scene {
                 ambient: 1, diffusivity: 1, specularity: 1
             }),
             stick: new Material(new defs.Phong_Shader(), {
-                // color: hex_color("#000000"),
+                color: hex_color("#FAFAD2"),
                 ambient: 1, diffusivity: 1, specularity: 1,
                 //  texture: new Texture("assets/stick.obj")
             }),
             score: new Material(new defs.Textured_Phong(1), {
-            ambient: 1, diffusivity: 0, specularity: 0,
-            texture: new Texture("assets/text.png")
+                ambient: 1, diffusivity: 0, specularity: 0, color: hex_color("#FFFF00"),
+                texture: new Texture("assets/text.png")
             }),
         };
 
         this.cue_ball = {
-            velocity: vec(0.1, -0.2),
-            position: vec(3, 0.8),
+            velocity: vec(0, 0),
+            position: vec(-5, -0.8),
             score: 0,
         };
 
@@ -92,7 +93,7 @@ export class Snooker extends Scene {
         };
 
         this.yellow_ball = {
-            velocity: vec(0.2,-0.1),
+            velocity: vec(0,0),
             position: vec(-3.38, 1.6),
             score: 2,
         };
@@ -104,7 +105,7 @@ export class Snooker extends Scene {
         };
 
         this.brown_ball = {
-            velocity: vec(0.3,0),
+            velocity: vec(0,0),
             position: vec(-3.38, 0),
             score: 4,
         };
@@ -127,10 +128,16 @@ export class Snooker extends Scene {
             score: 7,
         };
 
+        this.stick = {
+            velocity: vec(0,0),
+           position: vec(this.cue_ball.position[0] - 0.38, this.cue_ball.position[1] - 0.1),
+        };
+        this.angle1 = Math.cos(Math.atan2(this.stick.position[1],this.stick.position[0]));
+        this.angle2 = Math.sin(Math.atan2(this.stick.position[1],this.stick.position[0]));
         this.max_score = 30;
         this.score = {
-            "player1": 0,
-            "player2": 0,
+            player1: 0,
+            player2: 0,
         }
         this.current_player = {
             "player1": true,
@@ -325,15 +332,15 @@ export class Snooker extends Scene {
         let model_transform = Mat4.identity();
 
         // create table
-        let table_transform = model_transform.times(Mat4.translation(0, 0, 0))
-            .times(Mat4.scale(7.5, 7.4, 1));
-        this.shapes.table.draw(context, program_state, table_transform, this.materials.table);
+        // let table_transform = model_transform.times(Mat4.translation(0, 0, 0))
+        //     .times(Mat4.scale(7.5, 7.4, 1));
+        // this.shapes.table.draw(context, program_state, table_transform, this.materials.table);
 
         // Scoreboard
-        let player_score_transform = model_transform.times(Mat4.translation(0, 0, 0));
-        this.shapes.text.set_string(`Score: ${this.score['player1']}`, context.context);
-        this.shapes.text.draw(context, program_state, player_score_transform,
-            this.materials.score);
+        // let player_score_transform = model_transform.times(Mat4.translation(0, 0, 0));
+        // this.shapes.text.set_string(`Score: 1`, context.context);
+        // this.shapes.text.draw(context, program_state, model_transform,
+        //     this.materials.score);
         // let scoreboard_transform = model_transform.times(Mat4.translation(-5, -4, 0))
         //     .times(Mat4.scale(0.5,0.5,1));
         // this.shapes.text.draw(context, program_state, scoreboard_transform, this.materials.score);
@@ -349,6 +356,11 @@ export class Snooker extends Scene {
             // create ball transform
             let cue_ball_transform = model_transform.times(Mat4.translation(this.cue_ball.position[0], this.cue_ball.position[1], 0)
                 .times(Mat4.scale(0.23, 0.23, 0.23)));
+            let stick_transform = model_transform.times(Mat4.rotation(Math.PI/6, 0, 0, 1))
+                // .times(Mat4.translation(this.cue_ball.position[1], this.cue_ball.position[0],0))
+                .times(Mat4.scale(1.8,0.14,1))
+                .times(Mat4.translation(this.cue_ball.position[0] + 1, this.cue_ball.position[1] + 14.2, 0));
+
             let red_ball_1_transform = model_transform.times(Mat4.translation(this.red_ball_1.position[0], this.red_ball_1.position[1], 0))
                 .times(Mat4.scale(0.24, 0.24, 0.24));
             let red_ball_2_transform = model_transform.times(Mat4.translation(this.red_ball_2.position[0], this.red_ball_2.position[1], 0))
@@ -368,7 +380,7 @@ export class Snooker extends Scene {
             let black_ball_transform = model_transform.times(Mat4.translation(this.black_ball.position[0], this.black_ball.position[1], 0))
                 .times(Mat4.scale(0.24, 0.24, 0.24));
 
-            // create all balls
+            //create all balls
             this.shapes.ball.draw(context, program_state, cue_ball_transform, this.materials.cue_ball);
             this.shapes.ball.draw(context, program_state, red_ball_1_transform, this.materials.red_ball);
             this.shapes.ball.draw(context, program_state, red_ball_2_transform, this.materials.red_ball);
@@ -379,6 +391,10 @@ export class Snooker extends Scene {
             this.shapes.ball.draw(context, program_state, blue_ball_transform, this.materials.blue_ball);
             this.shapes.ball.draw(context, program_state, pink_ball_transform, this.materials.pink_ball);
             this.shapes.ball.draw(context, program_state, black_ball_transform, this.materials.black_ball);
+            this.shapes.stick.draw(context, program_state, stick_transform, this.materials.stick);
+            let table_transform = model_transform.times(Mat4.translation(0, 0, 0))
+                .times(Mat4.scale(7.5, 7.4, 1));
+            this.shapes.table.draw(context, program_state, table_transform, this.materials.table);
 
             // start ball movement
             this.move_ball(program_state, this.cue_ball);
@@ -507,54 +523,5 @@ export class Snooker extends Scene {
             this.pink_ball.velocity = vec(0,0);
             this.black_ball.velocity = vec(0,0);
         }
-    }
-}
-
-class Texture_Scroll_X extends Textured_Phong {
-    // TODO:  Modify the shader below (right now it's just the same fragment shader as Textured_Phong) for requirement #6.
-    fragment_glsl_code() {
-        return this.shared_glsl_code() + `
-            varying vec2 f_tex_coord;
-            uniform sampler2D texture;
-            uniform float animation_time;
-
-        void main(){
-            // Sample the texture image in the correct place:
-
-            float slide_trans = mod(animation_time, 4.) * 2.;
-            mat4 slide_matrix = mat4(vec4(-1., 0., 0., 0.),
-                vec4( 0., 1., 0., 0.),
-                vec4( 0., 0., 1., 0.),
-                vec4(slide_trans, 0., 0., 1.));
-            vec4 new_tex_coord = vec4(f_tex_coord, 0, 0) + vec4(1., 1., 0., 1.);
-            new_tex_coord = slide_matrix * new_tex_coord;
-            vec4 tex_color = texture2D(texture, new_tex_coord.xy);
-
-            float u = mod(new_tex_coord.x, 1.0);
-            float v = mod(new_tex_coord.y, 1.0);
-
-            // top
-            if (v > 0.75 && v < 0.85 && u > 0.15 && u < 0.85) {
-                tex_color = vec4(0, 0, 0, 1.0);
-            }
-            // bottom
-            if (v > 0.15 && v < 0.25 && u > 0.15 && u < 0.85) {
-                tex_color = vec4(0, 0, 0, 1.0);
-            }
-            // left 
-            if (u > 0.15 && u < 0.25 && v > 0.15 && v < 0.85) {
-                tex_color = vec4(0, 0, 0, 1.0);
-            }
-            // right
-            if (u > 0.75 && u < 0.85 && v > 0.15 && v < 0.85) {
-                tex_color = vec4(0, 0, 0, 1.0);
-            }
-           
-            if( tex_color.w < .01 ) discard;
-            // Compute an initial (ambient) color:
-            gl_FragColor = vec4( ( tex_color.xyz + shape_color.xyz ) * ambient, shape_color.w * tex_color.w );
-            // Compute the final color with contributions from lights:
-            gl_FragColor.xyz += phong_model_lights( normalize( N ), vertex_worldspace );
-        } `;
     }
 }
